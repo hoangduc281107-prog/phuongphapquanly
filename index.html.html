@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <title>5 Phương Pháp Quản Lý – Bản Nâng Cấp</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg0:#070A12; --bg1:#0B1020;
+      --card:rgba(255,255,255,.06); --card2:rgba(255,255,255,.09);
+      --stroke:rgba(255,255,255,.14);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.66);
+      --muted2:rgba(255,255,255,.45);
+      --shadow:0 18px 60px rgba(0,0,0,.45);
+      --ring:0 0 0 3px rgba(130,170,255,.22);
+      --radius:18px; --radius2:14px;
+
+      --accent:#86a8ff; --accent2:#7ef0ff; --accent3:#d28cff;
+      --ok:#35d07f; --warn:#ffd166; --bad:#ff5c7a;
+      --container:1180px;
+    }
+
+    [data-theme="light"]{
+      --bg0:#f6f8ff; --bg1:#ffffff;
+      --card:rgba(10,30,60,.05); --card2:rgba(10,30,60,.08);
+      --stroke:rgba(10,30,60,.12);
+      --text:rgba(10,18,40,.92);
+      --muted:rgba(10,18,40,.70);
+      --muted2:rgba(10,18,40,.48);
+      --shadow:0 18px 60px rgba(12,18,40,.12);
+      --accent:#3a66ff; --accent2:#00a8c6; --accent3:#8b38ff;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(134,168,255,.22), transparent 55%),
+        radial-gradient(900px 600px at 85% 20%, rgba(126,240,255,.18), transparent 55%),
+        radial-gradient(1000px 700px at 60% 95%, rgba(210,140,255,.16), transparent 55%),
+        linear-gradient(180deg,var(--bg0),var(--bg1));
+      overflow-x:hidden;
+    }
+
+    .wrap{max-width:var(--container);margin:0 auto;padding:28px 18px 46px}
+    header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+    .hero{flex:1;min-width:260px}
+    .kicker{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:8px 12px;border-radius:999px;
+      background:linear-gradient(90deg, rgba(134,168,255,.18), rgba(126,240,255,.14));
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      font-weight:700;font-size:12.5px;letter-spacing:.2px;
+      margin-bottom:12px;
+    }
+    .title{margin:0 0 6px;font-size:clamp(28px,2.6vw,44px);line-height:1.08;letter-spacing:-0.02em}
+    .subtitle{margin:0;color:var(--muted);max-width:80ch;line-height:1.55;font-size:14.5px}
+
+    .controls{display:flex;flex-direction:column;gap:10px;min-width:320px;align-items:flex-end}
+    .row{display:flex;gap:10px;align-items:center;justify-content:flex-end;width:100%;flex-wrap:wrap}
+
+    .btn{
+      appearance:none;border:1px solid var(--stroke);
+      background:var(--card);color:var(--text);
+      border-radius:999px;padding:10px 12px;
+      font-weight:700;font-size:13px;cursor:pointer;
+      box-shadow:0 10px 30px rgba(0,0,0,.10);
+      transition:transform .15s ease, background .15s ease, border-color .15s ease;
+      user-select:none;
+    }
+    .btn:hover{transform:translateY(-1px);background:var(--card2)}
+    .btn:focus-visible{outline:none;box-shadow:var(--ring)}
+
+    .search{width:100%;position:relative}
+    .search input{
+      width:100%;
+      padding:12px 12px 12px 40px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:var(--card);
+      color:var(--text);
+      font-weight:700;font-size:13px;
+      outline:none;
+      transition:background .15s ease, box-shadow .15s ease;
+    }
+    .search input::placeholder{color:var(--muted2);font-weight:700}
+    .search input:focus{box-shadow:var(--ring);background:var(--card2)}
+    .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.75}
+
+    .panel{
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .topbar{
+      display:flex;gap:10px;align-items:center;justify-content:space-between;
+      padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10);
+      flex-wrap:wrap;
+    }
+    [data-theme="light"] .topbar{border-bottom-color:rgba(10,30,60,.10)}
+    .crumbs{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .link{
+      display:inline-flex;gap:8px;align-items:center;
+      color:var(--muted);text-decoration:none;
+      padding:8px 10px;border-radius:999px;border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      font-weight:800;font-size:12.5px;
+      transition:background .15s ease, transform .15s ease;
+    }
+    .link:hover{background:var(--card2);transform:translateY(-1px)}
+    .meta{color:var(--muted2);font-weight:700;font-size:12.5px}
+
+    .content{padding:16px}
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .card{
+      border:1px solid var(--stroke);
+      background:var(--card);
+      border-radius:var(--radius);
+      padding:14px 14px 12px;
+      box-shadow:0 14px 48px rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
+      backdrop-filter: blur(10px);
+    }
+    .card::before{
+      content:"";
+      position:absolute;inset:-1px -1px auto auto;
+      width:190px;height:190px;
+      transform:translate(30%,-30%);
+      opacity:.85;pointer-events:none;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(134,168,255,.30), transparent 65%),
+        radial-gradient(circle at 70% 50%, rgba(126,240,255,.20), transparent 60%);
+    }
+
+    .h{
+      display:flex;gap:10px;align-items:flex-start;justify-content:space-between;margin-bottom:10px
+    }
+    .h h3{margin:0;font-size:16px;letter-spacing:-0.01em;line-height:1.2}
+    .k{margin-top:4px;color:var(--muted);font-size:12.5px;font-weight:700;line-height:1.35}
+
+    .badge{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:7px 10px;border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+      font-weight:900;font-size:11.5px;letter-spacing:.25px;
+      white-space:nowrap;
+    }
+    .dot{width:8px;height:8px;border-radius:999px;display:inline-block;box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+    .pillRow{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 0}
+    .pill{
+      padding:7px 10px;border-radius:999px;
+      border:1px dashed var(--stroke);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-weight:800;font-size:12px;
+    }
+
+    details{border-top:1px solid rgba(255,255,255,.08);margin-top:10px;padding-top:10px}
+    [data-theme="light"] details{border-top-color:rgba(10,30,60,.10)}
+    summary{
+      cursor:pointer;list-style:none;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      user-select:none;color:var(--text);
+      font-weight:900;font-size:13px;
+    }
+    summary::-webkit-details-marker{display:none}
+    .chev{width:18px;height:18px;transition:transform .15s ease;opacity:.8;flex:0 0 auto}
+    details[open] .chev{transform:rotate(180deg)}
+    .body{margin-top:10px;color:var(--muted);font-size:13.2px;line-height:1.6}
+    .body ul{margin:8px 0 0 18px;padding:0}
+    .body li{margin:6px 0}
+
+    .two{
+      grid-column: span 6;
+      min-height: 220px;
+    }
+    .full{grid-column: 1 / -1}
+    .quiz{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:14px;
+    }
+    .quiz .card::before{background: radial-gradient(circle at 30% 30%, rgba(210,140,255,.26), transparent 62%), radial-gradient(circle at 70% 45%, rgba(134,168,255,.22), transparent 62%);}
+
+    .check{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:10px 12px;border-radius:var(--radius2);
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03);
+      margin:10px 0;
+    }
+    [data-theme="light"] .check{border-color:rgba(10,30,60,.12);background:rgba(10,30,60,.03)}
+    .check input{margin-top:3px}
+    .check label{cursor:pointer}
+    .check b{color:var(--text)}
+    .small{color:var(--muted2);font-weight:700;font-size:12.5px;line-height:1.55}
+
+    .result{
+      border-radius:var(--radius2);
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      padding:12px;
+      margin-top:10px;
+    }
+    .scoreRow{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+    .chip{
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      font-weight:900;font-size:12px;color:var(--muted);
+    }
+
+    mark{
+      background: rgba(255, 209, 102, .28);
+      color: inherit;
+      padding: 0 .2em;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 209, 102, .25);
+    }
+
+    footer{
+      margin-top:14px;color:var(--muted2);
+      font-size:12.5px;line-height:1.6;
+      display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:0 2px
+    }
+    footer b{color:var(--muted)}
+
+    @media (max-width: 980px){
+      .controls{min-width:0;width:100%;align-items:flex-start}
+      .row{justify-content:flex-start}
+      .two{grid-column: 1 / -1}
+      .quiz{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div class="hero">
+        <div class="kicker">🧩 5 phương pháp • Dễ học • Có gợi ý chọn nhanh theo tình huống</div>
+        <h1 class="title">5 Phương Pháp Quản Lý</h1>
+        <p class="subtitle">
+          Bản trình bày này tập trung vào <b>cách dùng</b>: mỗi phương pháp đều có “khi nào nên dùng”, “dùng thế nào cho đúng”
+          và “rủi ro thường gặp”. Bạn có thể dùng để thuyết trình/ôn tập hoặc làm dự án nhóm.
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="row">
+          <button class="btn" id="btnTheme" title="Đổi giao diện sáng/tối">🌓 Đổi giao diện</button>
+          <button class="btn" id="btnExpand" title="Mở/đóng toàn bộ nội dung">📌 Mở tất cả</button>
+          <button class="btn" id="btnReset" title="Xoá tìm kiếm & reset gợi ý">♻️ Reset</button>
+        </div>
+
+        <div class="search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" opacity=".9"/>
+            <path d="M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".9"/>
+          </svg>
+          <input id="q" type="text" placeholder="Tìm nhanh: cưỡng chế, động lực, quy trình, thưởng phạt, thuyết phục..." autocomplete="off" />
+        </div>
+      </div>
+    </header>
+
+    <section class="panel">
+      <div class="topbar">
+        <div class="crumbs">
+          <a class="link" href="./index.html" title="Quay về trang mindmap">⬅️ Trang mindmap</a>
+          <a class="link" href="./" title="Mở thư mục dự án">📁 Trang chủ</a>
+        </div>
+        <div class="meta">Tip: bấm vào từng mục để mở nội dung (accordion).</div>
+      </div>
+
+      <div class="content">
+        <div class="grid" id="cards"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div><b>Gợi ý thuyết trình:</b> nêu “tình huống” → chọn “phương pháp” → giải thích “ưu/nhược” → chốt “cách dùng đúng”.</div>
+      <div><b>Tuỳ biến:</b> sửa dữ liệu trong mảng <code>METHODS</code> để đổi nội dung/nhóm/lớp.</div>
+    </footer>
+  </div>
+
+  <script>
+    const el  = (s, r=document) => r.querySelector(s);
+    const els = (s, r=document) => [...r.querySelectorAll(s)];
+
+    const METHODS = [
+      {
+        id:"GD",
+        title:"1) Giáo dục (Chính trị – Tư tưởng)",
+        kicker:"Tác động vào nhận thức & niềm tin để tạo thống nhất hành động.",
+        tone:"ok",
+        tag:"Định hướng",
+        pills:["Bền vững", "Tác dụng dài hạn", "Xây nền văn hoá"],
+        objective:[
+          "Xây dựng hệ giá trị chung và chuẩn mực hành vi.",
+          "Tạo sự đồng thuận về mục tiêu và trách nhiệm tập thể."
+        ],
+        when:[
+          "Khi đội ngũ thiếu thống nhất, dễ dao động trước khó khăn.",
+          "Khi cần xây dựng văn hoá, kỷ luật tự giác, đạo đức nghề nghiệp."
+        ],
+        how:[
+          "Nêu gương (lead by example): người lãnh đạo làm trước.",
+          "Truyền thông lặp lại: họp ngắn, tài liệu 1 trang, thông điệp nhất quán.",
+          "Đào tạo theo tình huống: case study thay vì lý thuyết khô."
+        ],
+        pros:[
+          "Tạo động lực nội tại, giảm phụ thuộc kiểm soát bên ngoài.",
+          "Giữ được tính ổn định trong dài hạn (văn hoá mạnh)."
+        ],
+        cons:[
+          "Tác dụng chậm; nếu làm hình thức sẽ phản tác dụng.",
+          "Khó đo lường tức thời như KPI."
+        ],
+        example:[
+          "Tổ chức sinh hoạt chuyên đề/đào tạo giá trị cốt lõi.",
+          "Phong trào thi đua gắn với chuẩn mực ứng xử cụ thể."
+        ],
+        keywords:["giáo dục","tư tưởng","niềm tin","văn hoá","định hướng","đồng thuận"]
+      },
+      {
+        id:"TLXH",
+        title:"2) Tâm lý – Xã hội",
+        kicker:"Tác động vào cảm xúc, dư luận, quan hệ để tăng hợp tác.",
+        tone:"ok",
+        tag:"Gắn kết",
+        pills:["Thuyết phục", "Động viên", "Giảm xung đột"],
+        objective:[
+          "Tăng tinh thần tích cực và sự tin cậy trong nhóm.",
+          "Giảm mâu thuẫn, tăng hợp tác, khơi gợi sáng tạo."
+        ],
+        when:[
+          "Khi căng thẳng cao, xung đột tăng, năng lượng đội ngũ giảm.",
+          "Khi cần lan toả hành vi tốt, tạo bầu không khí làm việc lành mạnh."
+        ],
+        how:[
+          "Thuyết phục bằng lợi ích chung + lắng nghe (active listening).",
+          "Ghi nhận đúng lúc: khen cụ thể hành vi, không khen chung chung.",
+          "Tạo cơ chế phản hồi an toàn: retro 15 phút/tuần."
+        ],
+        pros:[
+          "Tăng tự giác, giảm đối phó; nâng chất lượng phối hợp.",
+          "Linh hoạt, phù hợp quản trị con người."
+        ],
+        cons:[
+          "Khó định lượng; phụ thuộc kỹ năng lãnh đạo.",
+          "Nếu ‘lạm dụng cảm xúc’ dễ thành mị dân hoặc thiên vị."
+        ],
+        example:[
+          "Team building có mục tiêu (không chỉ đi chơi): gắn với giá trị hợp tác.",
+          "Vinh danh công khai theo tiêu chí rõ ràng (minh bạch)."
+        ],
+        keywords:["tâm lý","xã hội","thuyết phục","động viên","khích lệ","dư luận","gắn kết"]
+      },
+      {
+        id:"KT",
+        title:"3) Kinh tế",
+        kicker:"Dùng đòn bẩy lợi ích vật chất để tạo động lực và kỷ luật.",
+        tone:"warn",
+        tag:"Động lực",
+        pills:["Lương/Thưởng", "Khoán", "Phạt vi phạm"],
+        objective:[
+          "Gắn kết quả với lợi ích: làm tốt được thưởng, sai bị trừ.",
+          "Tạo công bằng tương đối và tăng năng suất."
+        ],
+        when:[
+          "Khi công việc đo được đầu ra (số lượng, chất lượng, doanh số).",
+          "Khi cần tăng tốc hoặc xử lý tình trạng ‘làm cho có’."
+        ],
+        how:[
+          "Thiết kế thưởng theo hành vi đúng: thưởng KPI + thưởng chất lượng.",
+          "Tránh ‘thưởng bừa’: quy định tiêu chí, ngưỡng, thời điểm chi.",
+          "Kết hợp với minh bạch: công khai nguyên tắc tính thưởng/phạt."
+        ],
+        pros:[
+          "Tác động nhanh, dễ hiểu, dễ triển khai.",
+          "Tăng trách nhiệm với kết quả."
+        ],
+        cons:[
+          "Dễ tạo thực dụng: chỉ làm cái có thưởng.",
+          "Nếu KPI sai → tối ưu nhầm; có thể sinh cạnh tranh xấu."
+        ],
+        example:[
+          "Thưởng theo mục tiêu tuần/tháng; khoán theo sản lượng đạt chuẩn.",
+          "Phạt rõ điều khoản vi phạm hợp đồng/quy chế."
+        ],
+        keywords:["kinh tế","lương","thưởng","phạt","kpi","khoán","đòn bẩy","vật chất"]
+      },
+      {
+        id:"TC",
+        title:"4) Tổ chức – Điều khiển",
+        kicker:"Thiết kế bộ máy, phân công, quy trình để hệ thống chạy trơn.",
+        tone:"warn",
+        tag:"Vận hành",
+        pills:["Phân công", "Quy trình", "Kiểm soát"],
+        objective:[
+          "Tạo ‘khung xương’ vận hành: rõ vai trò, rõ luồng công việc.",
+          "Giảm chồng chéo và tối ưu phối hợp."
+        ],
+        when:[
+          "Khi nhóm lớn dần, việc nhiều, dễ rối/chồng chéo.",
+          "Khi cần kiểm soát chất lượng và tiến độ theo chuẩn."
+        ],
+        how:[
+          "Vẽ sơ đồ trách nhiệm: RACI/DRI + mô tả công việc (JD).",
+          "Chuẩn hoá quy trình: đầu vào → xử lý → đầu ra + checkpoint chất lượng.",
+          "Dùng công cụ: kanban, checklist, họp nhịp (daily/weekly)."
+        ],
+        pros:[
+          "Khoa học, dễ nhân rộng; giảm phụ thuộc cá nhân.",
+          "Tăng ổn định, giảm sai sót vận hành."
+        ],
+        cons:[
+          "Bộ máy cồng kềnh → chậm; quy trình rườm rà → ách tắc.",
+          "Nếu quá cứng sẽ bóp nghẹt sáng tạo."
+        ],
+        example:[
+          "Chuẩn onboarding: tài liệu 1 trang + checklist tuần đầu.",
+          "Quy trình một cửa: giảm vòng phê duyệt, rõ đầu mối."
+        ],
+        keywords:["tổ chức","điều khiển","bộ máy","phân công","quy trình","iso","jd","raci","dri"]
+      },
+      {
+        id:"HCPL",
+        title:"5) Hành chính – Pháp luật",
+        kicker:"Dựa trên quyền lực, quy định và tính cưỡng chế để lập kỷ cương.",
+        tone:"bad",
+        tag:"Kỷ cương",
+        pills:["Quy định", "Cưỡng chế", "Xử lý nhanh"],
+        objective:[
+          "Thiết lập trật tự, kỷ luật và chuẩn mực bắt buộc tuân thủ.",
+          "Giải quyết tình huống khẩn cấp/vi phạm nặng."
+        ],
+        when:[
+          "Khi cần quyết định nhanh, rủi ro cao, không thể ‘thử sai’.",
+          "Khi có vi phạm rõ ràng cần xử lý để răn đe và bảo vệ hệ thống."
+        ],
+        how:[
+          "Quy định phải rõ: điều khoản – chế tài – quy trình xử lý.",
+          "Áp dụng công bằng, có biên bản và bằng chứng.",
+          "Kết hợp giáo dục/tâm lý để giảm đối phó về lâu dài."
+        ],
+        pros:[
+          "Nhanh, mạnh, tạo kỷ cương rõ rệt.",
+          "Phù hợp xử lý khẩn cấp hoặc vi phạm nghiêm trọng."
+        ],
+        cons:[
+          "Cứng nhắc; dễ quan liêu nếu lạm dụng.",
+          "Có thể tạo tâm lý sợ sai và đối phó."
+        ],
+        example:[
+          "Ban hành nội quy, quy chế; quyết định kỷ luật theo quy trình.",
+          "Áp dụng quy định an toàn (PCCC, an ninh thông tin) bắt buộc."
+        ],
+        keywords:["hành chính","pháp luật","quy định","cưỡng chế","kỷ luật","chế tài","khẩn cấp"]
+      }
+    ];
+
+    const SITUATIONS = [
+      {
+        id:"s1",
+        title:"Đội ngũ thiếu thống nhất, dễ dao động",
+        hint:"Cần xây nền giá trị & đồng thuận",
+        weights:{ GD:3, TLXH:2, TC:1, KT:0, HCPL:0 }
+      },
+      {
+        id:"s2",
+        title:"Xung đột tăng, tinh thần giảm, hợp tác kém",
+        hint:"Cần giải toả tâm lý, cải thiện quan hệ",
+        weights:{ TLXH:3, GD:1, TC:1, KT:0, HCPL:0 }
+      },
+      {
+        id:"s3",
+        title:"Cần tăng tốc kết quả đo được (doanh số/sản lượng)",
+        hint:"Cần động lực rõ ràng theo đầu ra",
+        weights:{ KT:3, TC:2, TLXH:1, GD:0, HCPL:0 }
+      },
+      {
+        id:"s4",
+        title:"Quy trình rối, chồng chéo, hay trễ hạn",
+        hint:"Cần thiết kế lại vận hành",
+        weights:{ TC:3, KT:1, TLXH:1, GD:0, HCPL:0 }
+      },
+      {
+        id:"s5",
+        title:"Vi phạm nghiêm trọng / tình huống khẩn cấp",
+        hint:"Cần xử lý nhanh, lập kỷ cương",
+        weights:{ HCPL:3, TC:2, GD:1, TLXH:0, KT:0 }
+      }
+    ];
+
+    const cardsRoot = el("#cards");
+    const q = el("#q");
+    const btnTheme = el("#btnTheme");
+    const btnExpand = el("#btnExpand");
+    const btnReset = el("#btnReset");
+
+    let isAllOpen = false;
+
+    function toneColor(tone){
+      if(tone==="ok") return "var(--ok)";
+      if(tone==="warn") return "var(--warn)";
+      return "var(--bad)";
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function highlight(text, query){
+      if(!query) return escapeHtml(text);
+      const safe = escapeHtml(text);
+      const re = new RegExp("(" + query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "ig");
+      return safe.replace(re, "<mark>$1</mark>");
+    }
+
+    function cardHTML(m, query){
+      const dot = toneColor(m.tone);
+      return `
+        <article class="card two" data-method="${m.id}">
+          <div class="h">
+            <div>
+              <h3>${highlight(m.title, query)}</h3>
+              <div class="k">${highlight(m.kicker, query)}</div>
+            </div>
+            <div class="badge" title="Nhóm tác động chính">
+              <span class="dot" style="background:${dot}"></span>
+              ${escapeHtml(m.tag)}
+            </div>
+          </div>
+
+          <div class="pillRow">
+            ${m.pills.map(p => `<span class="pill">${escapeHtml(p)}</span>`).join("")}
+          </div>
+
+          <details>
+            <summary>
+              <span>🎯 Mục tiêu & Khi dùng</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="body">
+              <b>Mục tiêu:</b>
+              <ul>${m.objective.map(x => `<li>${highlight(x, query)}</li>`).join("")}</ul>
+              <b>Khi nên dùng:</b>
+              <ul>${m.when.map(x => `<li>${highlight(x, query)}</li>`).join("")}</ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span>🧠 Cách triển khai (How)</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="body">
+              <ul>${m.how.map(x => `<li>${highlight(x, query)}</li>`).join("")}</ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span>✅ Ưu điểm • ⚠️ Hạn chế</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="body">
+              <b>Ưu điểm:</b>
+              <ul>${m.pros.map(x => `<li>${highlight(x, query)}</li>`).join("")}</ul>
+              <b>Hạn chế:</b>
+              <ul>${m.cons.map(x => `<li>${highlight(x, query)}</li>`).join("")}</ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>
+              <span>🧪 Ví dụ ứng dụng</span>
+              <svg class="chev" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </summary>
+            <div class="body">
+              <ul>${m.example.map(x => `<li>${highlight(x, query)}</li>`).join("")}</ul>
+            </div>
+          </details>
+        </article>
+      `;
+    }
+
+    function quizHTML(){
+      return `
+        <article class="card full">
+          <div class="h">
+            <div>
+              <h3>🔎 Chọn phương pháp theo tình huống (gợi ý nhanh)</h3>
+              <div class="k">Chọn 1–3 tình huống → hệ thống sẽ đề xuất phương pháp phù hợp nhất.</div>
+            </div>
+            <div class="badge" title="Gợi ý lựa chọn">
+              <span class="dot" style="background:var(--accent2)"></span>
+              Decision Helper
+            </div>
+          </div>
+
+          <div class="quiz">
+            <div>
+              ${SITUATIONS.map(s => `
+                <div class="check">
+                  <input type="checkbox" id="${s.id}" data-sit="${s.id}">
+                  <label for="${s.id}">
+                    <b>${escapeHtml(s.title)}</b>
+                    <div class="small">${escapeHtml(s.hint)}</div>
+                  </label>
+                </div>
+              `).join("")}
+
+              <div class="small">Mẹo: trong thực tế thường phải <b>kết hợp</b> (ví dụ: Tổ chức–Điều khiển + Kinh tế + Tâm lý–Xã hội).</div>
+            </div>
+
+            <div>
+              <div class="result" id="resultBox">
+                <b>Kết quả gợi ý:</b>
+                <div class="small" id="resultText">Chưa chọn tình huống nào.</div>
+                <div class="scoreRow" id="scoreRow"></div>
+              </div>
+
+              <div class="result">
+                <b>Nguyên tắc phối hợp “đúng bài”:</b>
+                <div class="small" style="margin-top:6px">
+                  • Dài hạn: <b>Giáo dục</b> + <b>Tâm lý–Xã hội</b><br>
+                  • Vận hành: <b>Tổ chức–Điều khiển</b> (xương sống)<br>
+                  • Tăng tốc: <b>Kinh tế</b> (đòn bẩy)<br>
+                  • Kỷ cương/khẩn cấp: <b>Hành chính–Pháp luật</b> (chốt chặn)
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function setAllDetails(open){
+      els("details").forEach(d => d.open = open);
+    }
+
+    function render(query=""){
+      const ql = query.trim().toLowerCase();
+
+      const visible = METHODS.filter(m => {
+        if(!ql) return true;
+        const blob = [
+          m.title, m.kicker, m.tag,
+          ...m.pills, ...m.objective, ...m.when, ...m.how, ...m.pros, ...m.cons, ...m.example,
+          ...m.keywords
+        ].join(" ").toLowerCase();
+        return blob.includes(ql);
+      });
+
+      cardsRoot.innerHTML =
+        quizHTML() +
+        visible.map(m => cardHTML(m, query)).join("");
+
+      // keep expand state
+      if(isAllOpen) setAllDetails(true);
+
+      // wire quiz listeners again (because rerender)
+      wireQuiz();
+    }
+
+    function getTheme(){
+      return document.documentElement.getAttribute("data-theme") || "dark";
+    }
+    function setTheme(next){
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("theme", next);
+    }
+    function initTheme(){
+      const saved = localStorage.getItem("theme");
+      if(saved) setTheme(saved);
+      else {
+        const prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+        setTheme(prefersLight ? "light" : "dark");
+      }
+    }
+
+    function computeSuggestion(selectedIds){
+      const scores = { GD:0, TLXH:0, KT:0, TC:0, HCPL:0 };
+
+      selectedIds.forEach(id => {
+        const sit = SITUATIONS.find(s => s.id === id);
+        if(!sit) return;
+        Object.keys(scores).forEach(k => scores[k] += (sit.weights[k] || 0));
+      });
+
+      const sorted = Object.entries(scores)
+        .sort((a,b) => b[1] - a[1]);
+
+      return { scores, sorted };
+    }
+
+    function labelFor(methodId){
+      const m = METHODS.find(x => x.id === methodId);
+      return m ? m.title.replace(/^\d+\)\s*/, "") : methodId;
+    }
+
+    function wireQuiz(){
+      const checks = els('[data-sit]');
+      const resultText = el("#resultText");
+      const scoreRow = el("#scoreRow");
+
+      if(!checks.length) return;
+
+      function update(){
+        const picked = checks.filter(c => c.checked).map(c => c.getAttribute("data-sit"));
+        if(!picked.length){
+          resultText.textContent = "Chưa chọn tình huống nào.";
+          scoreRow.innerHTML = "";
+          return;
+        }
+
+        const { sorted } = computeSuggestion(picked);
+        const top = sorted.filter(([,v]) => v>0).slice(0,3);
+
+        const topText = top.length
+          ? "Ưu tiên: " + top.map(([k]) => labelFor(k)).join(" • ")
+          : "Chưa đủ tín hiệu để gợi ý rõ (hãy chọn thêm tình huống).";
+
+        resultText.textContent = topText;
+
+        scoreRow.innerHTML = sorted.map(([k,v]) => {
+          const tone = METHODS.find(m => m.id===k)?.tone || "warn";
+          const dot = toneColor(tone);
+          return `
+            <span class="chip" title="Điểm phù hợp">
+              <span class="dot" style="background:${dot}"></span>
+              ${escapeHtml(k)}: ${v}
+            </span>
+          `;
+        }).join("");
+      }
+
+      checks.forEach(c => c.addEventListener("change", update));
+      update();
+    }
+
+    // Events
+    btnTheme.addEventListener("click", () => {
+      const next = getTheme()==="light" ? "dark" : "light";
+      setTheme(next);
+    });
+
+    btnExpand.addEventListener("click", () => {
+      isAllOpen = !isAllOpen;
+      setAllDetails(isAllOpen);
+      btnExpand.textContent = isAllOpen ? "📌 Đóng tất cả" : "📌 Mở tất cả";
+    });
+
+    q.addEventListener("input", () => render(q.value));
+
+    btnReset.addEventListener("click", () => {
+      q.value = "";
+      isAllOpen = false;
+      btnExpand.textContent = "📌 Mở tất cả";
+      render("");
+      // reset quiz
+      els('[data-sit]').forEach(c => c.checked = false);
+      wireQuiz();
+    });
+
+    // Init
+    initTheme();
+    render("");
+  </script>
+</body>
+</html>
